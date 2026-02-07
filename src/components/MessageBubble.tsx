@@ -1,5 +1,6 @@
-import { Bot, User } from "lucide-react";
+import { Bot, User, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export interface Message {
   id: string;
@@ -23,11 +24,26 @@ function stripMarkdown(text: string): string {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === "user";
+  const content = message.role === "assistant" ? stripMarkdown(message.content) : message.content;
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+
+      // Reset the icon after 8 seconds
+      setTimeout(() => setCopied(false), 6000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
 
   return (
     <div
       className={cn(
-        "flex gap-3 animate-fade-in",
+        "flex gap-3 animate-fade-in relative",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
@@ -48,15 +64,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       {/* Message content */}
       <div
         className={cn(
-          "max-w-[75%] px-4 py-3 rounded-2xl",
+          "max-w-[75%] px-4 py-3 rounded-2xl relative",
           isUser
             ? "bg-chat-user text-chat-user-foreground rounded-br-md"
             : "bg-chat-bot text-chat-bot-foreground rounded-bl-md"
         )}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-          {message.role === "assistant" ? stripMarkdown(message.content) : message.content}
-        </p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+
+        {/* Timestamp */}
         <span
           className={cn(
             "text-[10px] mt-1 block",
@@ -68,6 +84,21 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             minute: "2-digit",
           })}
         </span>
+
+        {/* Copy button for assistant messages */}
+        {!isUser && (
+          <button
+            onClick={handleCopy}
+            className="absolute top-1 right-1 p-1 rounded hover:bg-secondary/20 transition"
+            title={copied ? "Copied!" : "Copy message"}
+          >
+            {copied ? (
+              <Check className="w-3 h-3 text-green-500" />
+            ) : (
+              <Copy className="w-3 h-3 text-muted-foreground" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
