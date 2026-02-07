@@ -30,11 +30,18 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
 
-    // Auto-resize
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto"; // reset first
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px"; // max 120px
+
+      // Grow up to 120px
+      const newHeight = Math.min(textarea.scrollHeight, 120);
+      textarea.style.height = newHeight + "px";
+
+      // If content exceeds max height, scroll to bottom
+      if (textarea.scrollHeight > 120) {
+        textarea.scrollTop = textarea.scrollHeight;
+      }
     }
   };
 
@@ -48,7 +55,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           disabled={disabled}
-          className="min-h-[48px] max-h-[120px] resize-none bg-secondary/50 border-0 focus-visible:ring-1 focus-visible:ring-primary rounded-xl overflow-hidden"
+          className="min-h-[48px] max-h-[120px] resize-none bg-secondary/50 border-0 focus-visible:ring-1 focus-visible:ring-primary rounded-xl overflow-y-auto text-base"
           rows={1}
         />
         <Button
