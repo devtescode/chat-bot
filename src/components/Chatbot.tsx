@@ -134,7 +134,7 @@ export function Chatbot() {
             <MessageCircle className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-semibold text-foreground">AI Assistant</h1>
+            <h1 className="font-semibold text-foreground">AI Chat Buddy</h1>
             <p className="text-xs text-muted-foreground">Always here to help</p>
           </div>
         </div>
