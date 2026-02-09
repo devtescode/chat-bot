@@ -151,7 +151,7 @@ export function Chatbot() {
           <ThemeToggle darkMode={darkMode} onToggle={toggleDarkMode} />
         </div>
       </header>
-
+      
       <main className="flex-1 overflow-y-auto p-4 scrollbar-thin">
         <div className="max-w-3xl mx-auto space-y-4">
           {messages.length === 0 && (
