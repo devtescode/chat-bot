@@ -178,6 +178,7 @@ export function Chatbot() {
         </div>
       </main>
 
+
       <ChatInput onSend={handleSendMessage} disabled={isTyping} />
     </div>
   );
