@@ -242,7 +242,6 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           </div>
         )}
 
-        {/* Attachment previews */}
         {attachments.length > 0 && (
           <div className="flex gap-2 mb-3 flex-wrap">
             {attachments.map((att, i) => (
