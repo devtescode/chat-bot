@@ -306,7 +306,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
                 className="justify-start gap-2 text-sm"
                 onClick={() => { fileInputRef.current?.click(); setMenuOpen(false); }}
               >
-                <ImageIcon className="h-4 w-4" /> Photo
+                <ImageIcon className="h-4 w-4" /> Choose Image
               </Button>
               {/* <Button
                 variant="ghost"
