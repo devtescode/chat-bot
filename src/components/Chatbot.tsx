@@ -3,9 +3,9 @@ import { MessageCircle, Trash2 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { MessageBubble, Message } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
-import { ChatInput } from "./ChatInput";
+import { ChatInput, ChatAttachment } from "./ChatInput";
 import { Button } from "@/components/ui/button";
-import { streamChat } from "@/lib/chatApi";
+import { streamChat, buildMessageContent } from "@/lib/chatApi";
 import { toast } from "sonner";
 
 const STORAGE_KEY = "chatMessages";
@@ -25,13 +25,11 @@ export function Chatbot() {
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load messages from localStorage on mount
   useEffect(() => {
     const savedMessages = localStorage.getItem(STORAGE_KEY);
     if (savedMessages) {
       try {
         const parsed = JSON.parse(savedMessages);
-        // Convert timestamp strings back to Date objects
         const messagesWithDates = parsed.map((msg: any) => ({
           ...msg,
           timestamp: new Date(msg.timestamp),
@@ -43,14 +41,20 @@ export function Chatbot() {
     }
   }, []);
 
-  // Save messages to localStorage whenever they change
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      // Don't persist base64 images to localStorage (too large)
+      const toSave = messages.map((m) => ({
+        ...m,
+        attachments: m.attachments?.map((a) => ({
+          ...a,
+          dataUrl: a.type === "image" ? "" : a.dataUrl, // strip large data
+        })),
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     }
   }, [messages]);
 
-  // Apply dark mode class to document
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -60,17 +64,17 @@ export function Chatbot() {
     localStorage.setItem("darkMode", String(darkMode));
   }, [darkMode]);
 
-  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachments?: ChatAttachment[]) => {
     const userMessage: Message = {
       id: generateId(),
       role: "user",
       content,
       timestamp: new Date(),
+      attachments,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -79,10 +83,10 @@ export function Chatbot() {
     const assistantId = generateId();
     let assistantContent = "";
 
-    // Prepare messages for API (only role and content)
+    // Build API messages with multimodal support
     const apiMessages = [...messages, userMessage].map((m) => ({
       role: m.role,
-      content: m.content,
+      content: buildMessageContent(m.content, m.attachments),
     }));
 
     await streamChat({
@@ -107,9 +111,7 @@ export function Chatbot() {
           ];
         });
       },
-      onDone: () => {
-        setIsTyping(false);
-      },
+      onDone: () => setIsTyping(false),
       onError: (error) => {
         setIsTyping(false);
         toast.error(error);
@@ -122,9 +124,7 @@ export function Chatbot() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
-  };
+  const toggleDarkMode = () => setDarkMode((prev) => !prev);
 
   return (
     <div className="flex flex-col h-screen bg-chat-container">
@@ -163,7 +163,7 @@ export function Chatbot() {
                 Start a conversation
               </h2>
               <p className="text-muted-foreground text-center max-w-sm">
-                Send a message to begin chatting. Your conversation will be saved locally.
+                Get started by sending a message, taking a photo, or selecting photo from your device. For your privacy, all messages are saved locally on your device and not shared with any servers.
               </p>
             </div>
           )}
@@ -173,7 +173,6 @@ export function Chatbot() {
           ))}
 
           {isTyping && <TypingIndicator />}
-
           <div ref={messagesEndRef} />
         </div>
       </main>

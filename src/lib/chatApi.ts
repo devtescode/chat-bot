@@ -1,6 +1,51 @@
-type Message = { role: "user" | "assistant"; content: string };
+import type { ChatAttachment } from "@/components/ChatInput";
+
+type MessageContent =
+  | string
+  | Array<
+      | { type: "text"; text: string }
+      | { type: "image_url"; image_url: { url: string } }
+    >;
+
+type ApiMessage = { role: "user" | "assistant"; content: MessageContent };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+/** Build multimodal content array when attachments exist */
+export function buildMessageContent(
+  text: string,
+  attachments?: ChatAttachment[]
+): MessageContent {
+  if (!attachments || attachments.length === 0) return text;
+
+  const parts: Array<
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+  > = [];
+
+  // Add images
+  for (const att of attachments) {
+    if (att.type === "image") {
+      parts.push({ type: "image_url", image_url: { url: att.dataUrl } });
+    }
+  }
+
+  // Add PDFs/documents as image_url with their actual mime type (supported by Gemini)
+  for (const att of attachments) {
+    if (att.type === "file" && att.dataUrl) {
+      parts.push({ type: "image_url", image_url: { url: att.dataUrl } });
+    }
+  }
+
+  // Add text
+  let finalText = text || "What's in this image?";
+  if (!text && attachments.some((a) => a.type === "file")) {
+    finalText = "Please analyze this document and answer any questions in it.";
+  }
+  parts.push({ type: "text", text: finalText });
+
+  return parts;
+}
 
 export async function streamChat({
   messages,
@@ -8,7 +53,7 @@ export async function streamChat({
   onDone,
   onError,
 }: {
-  messages: Message[];
+  messages: ApiMessage[];
   onDelta: (deltaText: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -70,7 +115,6 @@ export async function streamChat({
       }
     }
 
-    // Final flush
     if (textBuffer.trim()) {
       for (let raw of textBuffer.split("\n")) {
         if (!raw) continue;
@@ -84,7 +128,7 @@ export async function streamChat({
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) onDelta(content);
         } catch {
-          /* ignore partial leftovers */
+          /* ignore */
         }
       }
     }

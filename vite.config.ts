@@ -40,13 +40,13 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
-        "favicon.ico",
-        "apple-touch-icon.png",
+        "ai-chat-buddy.png",
+        "ai-chat-buddy.png",
       ],
       manifest: {
         name: "AI Chat Buddy",
         short_name: "AI Chat Buddy",
-        description: "Receive anonymous messages safely",
+        description: "A chat assistant powered by AI.",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",
