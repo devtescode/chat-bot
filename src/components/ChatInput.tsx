@@ -294,20 +294,20 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
               >
                 <Camera className="h-4 w-4" /> Use Camera
               </Button>
-              <Button
+              {/* <Button
                 variant="ghost"
                 className="justify-start gap-2 text-sm"
                 onClick={() => { cameraInputRef.current?.click(); setMenuOpen(false); }}
               >
-                <ImageIcon className="h-4 w-4" /> Select Photo
-              </Button>
-              {/* <Button
+                <ImageIcon className="h-4 w-4" /> Use Photo
+              </Button> */}
+              <Button
                 variant="ghost"
                 className="justify-start gap-2 text-sm"
                 onClick={() => { fileInputRef.current?.click(); setMenuOpen(false); }}
               >
-                <ImageIcon className="h-4 w-4" /> Photo / PDF
-              </Button> */}
+                <ImageIcon className="h-4 w-4" /> Photo
+              </Button>
               {/* <Button
                 variant="ghost"
                 className={`justify-start gap-2 text-sm ${isRecording ? "text-destructive" : ""}`}
