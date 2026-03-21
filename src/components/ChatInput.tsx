@@ -319,7 +319,6 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             </PopoverContent>
           </Popover>
 
-          {/* Hidden file inputs */}
           <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
           <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt" multiple className="hidden" onChange={handleFileSelect} />
 
